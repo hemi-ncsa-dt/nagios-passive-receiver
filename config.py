@@ -7,7 +7,7 @@ import json
 import logging
 from pathlib import Path
 from pydantic_settings import BaseSettings
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +72,9 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        env_file_encoding = "utf-8"
         case_sensitive = False
+        extra = "ignore"
 
 
 # Global settings instance

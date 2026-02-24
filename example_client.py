@@ -4,7 +4,6 @@ Example script demonstrating how to send a passive check to the Nagios receiver.
 """
 
 import requests
-import json
 import sys
 
 # Configuration
