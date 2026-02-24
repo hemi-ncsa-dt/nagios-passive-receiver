@@ -8,12 +8,14 @@ services:
       - "8000:8000"
     environment:
       - NAGIOS_CMD_PATH=/var/nagios/rw/nagios.cmd
-      - API_KEYS=${API_KEYS}
+      - API_KEYS_FILE=/app/api_keys.json
       - HOST=0.0.0.0
       - PORT=8000
     volumes:
       # Mount the nagios command pipe directory
       - nagios-rw:/var/nagios/rw
+      # Mount the API keys file
+      - ./api_keys.json:/app/api_keys.json:ro
     restart: unless-stopped
     networks:
       - nagios-network

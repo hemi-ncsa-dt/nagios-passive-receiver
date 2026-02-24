@@ -29,10 +29,11 @@ A FastAPI-based HTTP server that receives external requests from Nagios monitori
 pip install -r requirements.txt
 ```
 
-3. Configure environment variables:
+3. Configure environment variables and API keys:
 ```bash
 cp .env.example .env
-# Edit .env with your configuration
+cp api_keys.example.json api_keys.json
+# Edit .env and api_keys.json with your configuration
 ```
 
 4. Run the server:
@@ -52,8 +53,9 @@ docker-compose up -d
 docker build -t nagios-passive-receiver .
 docker run -d -p 8000:8000 \
   -e NAGIOS_CMD_PATH=/var/nagios/rw/nagios.cmd \
-  -e API_KEYS="your-key-1:plugin1,your-key-2:plugin2" \
+  -e API_KEYS_FILE=/app/api_keys.json \
   -v /path/to/nagios/rw:/var/nagios/rw \
+  -v /path/to/api_keys.json:/app/api_keys.json:ro \
   nagios-passive-receiver
 ```
 
@@ -64,17 +66,42 @@ Configuration is done via environment variables (can be set in `.env` file):
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `NAGIOS_CMD_PATH` | Path to nagios.cmd file | `/var/nagios/rw/nagios.cmd` |
-| `API_KEYS` | Comma-separated API keys (format: `key:name,key:name`) | Required |
+| `API_KEYS_FILE` | Path to API keys JSON file | `api_keys.json` |
 | `HOST` | Server host address | `0.0.0.0` |
 | `PORT` | Server port | `8000` |
 | `TLS_CERT_FILE` | Path to TLS certificate (optional) | None |
 | `TLS_KEY_FILE` | Path to TLS key (optional) | None |
 
-### API Keys Format
+### API Keys Configuration
 
+API keys are stored in a JSON file (default: `api_keys.json`) for better management and security.
+
+**Format:**
+```json
+{
+  "api_keys": [
+    {
+      "key": "your-secret-key-1",
+      "name": "monitoring-plugin-1",
+      "description": "Production monitoring plugin",
+      "enabled": true
+    },
+    {
+      "key": "your-secret-key-2",
+      "name": "monitoring-plugin-2",
+      "description": "Backup monitoring plugin",
+      "enabled": true
+    }
+  ]
+}
 ```
-API_KEYS=secretkey123:monitoring-plugin-1,anotherkey456:monitoring-plugin-2
-```
+
+**Benefits:**
+- Easy to read and maintain
+- Can disable keys without deleting them (set `enabled: false`)
+- Supports comments via description field
+- Can be version controlled (with proper .gitignore)
+- No need to restart server - can be reloaded dynamically
 
 ## API Endpoints
 
@@ -175,10 +202,11 @@ curl -X POST "http://localhost:8000/api/v1/passive-check" \
 ## Security Considerations
 
 1. **TLS/HTTPS**: Always use TLS in production by configuring `TLS_CERT_FILE` and `TLS_KEY_FILE`
-2. **API Keys**: Use strong, randomly generated API keys
-3. **Network**: Run in a private network or use firewall rules to restrict access
-4. **File Permissions**: Ensure proper permissions on nagios.cmd file and directory
-5. **Input Validation**: The server validates all inputs to prevent injection attacks
+2. **API Keys**: Use strong, randomly generated API keys and store them in `api_keys.json`
+3. **File Security**: Keep `api_keys.json` readable only by the application user, not in version control
+4. **Network**: Run in a private network or use firewall rules to restrict access
+5. **File Permissions**: Ensure proper permissions on nagios.cmd file and directory
+6. **Input Validation**: The server validates all inputs to prevent injection attacks
 
 ## Architecture
 
@@ -186,8 +214,9 @@ The server consists of several modules:
 
 - **main.py**: FastAPI application with endpoints and authentication
 - **models.py**: Pydantic models for request/response validation
-- **config.py**: Configuration management using environment variables
+- **config.py**: Configuration management using environment variables and JSON API keys
 - **nagios_writer.py**: Handles writing to nagios.cmd file
+- **api_keys.json**: Secure storage for API keys (not in version control)
 
 ## Nagios Command Format
 

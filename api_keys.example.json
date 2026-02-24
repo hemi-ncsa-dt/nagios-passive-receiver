@@ -1,0 +1,16 @@
+{
+    "api_keys": [
+        {
+            "key": "your-secret-key-1",
+            "name": "monitoring-plugin-1",
+            "description": "Production monitoring plugin",
+            "enabled": true
+        },
+        {
+            "key": "your-secret-key-2",
+            "name": "monitoring-plugin-2",
+            "description": "Backup monitoring plugin",
+            "enabled": true
+        }
+    ]
+}

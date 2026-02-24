@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 import logging
 from datetime import datetime
 
-from config import settings
+from config import settings, api_key_config
 from models import PassiveCheckRequest, PassiveCheckResponse, HealthResponse
 from nagios_writer import NagiosCommandWriter
 
@@ -52,7 +52,7 @@ async def verify_api_key(api_key: str = Security(api_key_header)) -> str:
         )
 
     # Get valid API keys
-    valid_keys = settings.get_api_keys_dict()
+    valid_keys = api_key_config.get_api_keys_dict()
 
     if not valid_keys:
         logger.error("No API keys configured")
