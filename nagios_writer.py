@@ -83,7 +83,6 @@ class NagiosCommandWriter:
             with open(self.cmd_path, "a") as f:
                 f.write(command)
                 f.flush()
-                os.fsync(f.fileno())
 
             logger.info("Successfully wrote passive check result")
             return True
