@@ -66,3 +66,4 @@ class HealthResponse(BaseModel):
     timestamp: datetime = Field(
         default_factory=datetime.utcnow, description="Response timestamp"
     )
+    nagios_cmd_path: str = Field(..., description="Path to nagios.cmd file")

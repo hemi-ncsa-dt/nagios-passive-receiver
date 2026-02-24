@@ -6,7 +6,7 @@ Loads settings from environment variables and API keys from JSON file.
 import json
 import logging
 from pathlib import Path
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
@@ -63,18 +63,19 @@ class APIKeyConfig:
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
     nagios_cmd_path: str = "/var/nagios/rw/nagios.cmd"
     api_keys_file: str = "api_keys.json"
     host: str = "0.0.0.0"
     port: int = 8000
     tls_cert_file: Optional[str] = None
     tls_key_file: Optional[str] = None
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-        extra = "ignore"
 
 
 # Global settings instance

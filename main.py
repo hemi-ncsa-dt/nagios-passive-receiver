@@ -98,6 +98,7 @@ async def health_check():
         status="healthy" if is_writable else "degraded",
         nagios_cmd_writable=is_writable,
         timestamp=datetime.utcnow(),
+        nagios_cmd_path=settings.nagios_cmd_path,
     )
 
 
