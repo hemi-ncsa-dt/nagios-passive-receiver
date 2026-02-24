@@ -63,7 +63,7 @@ async def verify_api_key(api_key: str = Security(api_key_header)) -> str:
 
     # Verify the key
     if api_key not in valid_keys:
-        logger.warning(f"Invalid API key attempted")
+        logger.warning(f"Invalid API key attempted: {api_key}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key"
         )
