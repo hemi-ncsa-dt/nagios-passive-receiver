@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  nagios-passive-receiver:
+    build: .
+    container_name: nagios-passive-receiver
+    ports:
+      - "8000:8000"
+    environment:
+      - NAGIOS_CMD_PATH=/var/nagios/rw/nagios.cmd
+      - API_KEYS=${API_KEYS}
+      - HOST=0.0.0.0
+      - PORT=8000
+    volumes:
+      # Mount the nagios command pipe directory
+      - nagios-rw:/var/nagios/rw
+    restart: unless-stopped
+    networks:
+      - nagios-network
+
+volumes:
+  nagios-rw:
+    # This volume should be shared with your Nagios container
+
+networks:
+  nagios-network: # This network should be shared with your Nagios container
