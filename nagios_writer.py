@@ -7,7 +7,7 @@ import os
 import time
 import logging
 from pathlib import Path
-from models import PassiveCheckRequest
+from models import PassiveCheckRequest, HostCheckRequest
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +85,46 @@ class NagiosCommandWriter:
                 f.flush()
 
             logger.info("Successfully wrote passive check result")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error writing to nagios.cmd: {e}", exc_info=True)
+            return False
+
+    def write_host_check(self, check: HostCheckRequest) -> bool:
+        """
+        Write a host check result to the nagios.cmd file.
+
+        The format for passive host checks in Nagios is:
+        [<timestamp>] PROCESS_HOST_CHECK_RESULT;<host_name>;<host_status>;<plugin_output>
+
+        Args:
+            check: HostCheckRequest object containing check data
+
+        Returns:
+            True if write was successful, False otherwise
+        """
+        try:
+            # Get current timestamp
+            timestamp = int(time.time())
+
+            # Format the command according to Nagios external command format
+            command = (
+                f"[{timestamp}] PROCESS_HOST_CHECK_RESULT;"
+                f"{check.host_name};"
+                f"{check.host_status};"
+                f"{check.plugin_output}\n"
+            )
+
+            logger.info(f"Writing command to {self.cmd_path}: {command.strip()}")
+
+            # Write to the nagios.cmd file
+            # Using append mode and ensuring atomic write
+            with open(self.cmd_path, "a") as f:
+                f.write(command)
+                f.flush()
+
+            logger.info("Successfully wrote host check result")
             return True
 
         except Exception as e:

@@ -9,7 +9,12 @@ import logging
 from datetime import datetime
 
 from config import settings, api_key_config
-from models import PassiveCheckRequest, PassiveCheckResponse, HealthResponse
+from models import (
+    PassiveCheckRequest,
+    PassiveCheckResponse,
+    HealthResponse,
+    HostCheckRequest,
+)
 from nagios_writer import NagiosCommandWriter
 
 # Configure logging
@@ -82,6 +87,7 @@ async def root():
         "endpoints": {
             "health": "/health",
             "submit_check": "/api/v1/passive-check (POST)",
+            "submit_host_check": "/api/v1/host-check (POST)",
         },
     }
 
@@ -144,6 +150,50 @@ async def submit_passive_check(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to write passive check result",
+        )
+
+
+@app.post("/api/v1/host-check", response_model=PassiveCheckResponse)
+async def submit_host_check(
+    check: HostCheckRequest, plugin_name: str = Depends(verify_api_key)
+):
+    """
+    Submit a host check result to Nagios.
+
+    Args:
+        check: Host check data including host name, host status, and output
+        plugin_name: Authenticated plugin name (injected by dependency)
+
+    Returns:
+        PassiveCheckResponse indicating success or failure
+    """
+    logger.info(
+        f"Received host check from {plugin_name}: "
+        f"host={check.host_name}, status={check.host_status}"
+    )
+
+    # Check if nagios.cmd is writable
+    if not nagios_writer.is_writable():
+        logger.error("Cannot write to nagios.cmd file")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Cannot write to Nagios command file",
+        )
+
+    # Write the host check
+    success = nagios_writer.write_host_check(check)
+
+    if success:
+        return PassiveCheckResponse(
+            status="success",
+            message=f"Host check result submitted for {check.host_name}",
+            timestamp=datetime.utcnow(),
+        )
+    else:
+        logger.error("Failed to write host check")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to write host check result",
         )
 
 
