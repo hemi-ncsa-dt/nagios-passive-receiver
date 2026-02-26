@@ -244,4 +244,4 @@ When the server is running, visit:
 
 ## License
 
-This project is provided as-is for use with Nagios monitoring systems.
+This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICENSE) file for details.
